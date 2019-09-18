@@ -9,5 +9,5 @@ public interface ContatoDAO {
     public void addContatoDao(@NotNull Contato contato);
     public void delContatoDao(@NotNull Contato contato);
     public void updateContatoDao(@org.jetbrains.annotations.NotNull Contato contato);
-    public void getContatoDao(ResultSet result);
+    public void getContatoDao(int id);
 }

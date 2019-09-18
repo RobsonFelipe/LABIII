@@ -8,10 +8,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class JDBCContatoDAO implements ContatoDAO {
 
     private DataSource dataSource;
+    private JdbcTemplate jdbcTemplate;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -19,36 +21,72 @@ public class JDBCContatoDAO implements ContatoDAO {
     public void addContatoDao(@NotNull Contato contato){
 
         String addQuerie;
-        addQuerie = "INSERT INTO agenda(id_contato, first_name, last_name, email, group) VALUES(" +
-                contato.getId_contato() + ","+ contato.getFirst_name() +"," + contato.getLast_name() +"," +
-                contato.getEmail()+ ","+ contato.getGroup() +");";
+        addQuerie = "INSERT INTO agenda(id_contato, first_name, last_name, email, group) VALUES(?,?,?,?,? );";
+        Connection conn = null;
+
+        try {
+            conn = dataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement(addQuerie);
+            ps.setInt(1, contato.getId_contato());
+            ps.setString(2, contato.getFirst_name());
+            ps.setString(3, contato.getLast_name());
+            ps.setString(4, contato.getEmail());
+            ps.setInt(5, contato.getGroup());
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {}
+            }
+        }
 
     }
     public void delContatoDao(@NotNull Contato contato){
         String remQuerie = "";
-        remQuerie = "DELETE FROM agenda  a WHERE a.id_contato=" +contato.getId_contato()+";";
+        remQuerie = "DELETE FROM agenda  a WHERE a.id_contato=?;";
+        Connection conn = null;
+
+        try {
+            conn = dataSource.getConnection();
+            PreparedStatement ps = conn.prepareStatement(remQuerie);
+            ps.setInt(1, contato.getId_contato());
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {}
+            }
+        }
 
 
     }
     public void updateContatoDao(@NotNull Contato contato){
-        String updateQuerie = "UPDATE agenda a " +
-                "SET first_name = "       + contato.getFirst_name() +
-                ", last_name = "    + contato.getLast_name() +
-                ", email = "        + contato.getEmail() +
-                ", group = "        + contato.getGroup() +
-                "WHERE a.id_contato = " + contato.getId_contato();
+        String updateQuerie = "UPDATE agenda a SET first_name = ?, last_name = ?, email = ?, group = ? WHERE a.id_contato = ?;" ;
         Connection conn = null;
 
         try {
             conn = dataSource.getConnection();
             PreparedStatement ps = conn.prepareStatement(updateQuerie);
-            /*
-            ps.setInt(1, contato.getCustId());
-            ps.setString(2, contato.getName());
-            ps.setInt(3, contato.getAge());
+            ps.setString(1, contato.getFirst_name());
+            ps.setString(2, contato.getLast_name());
+            ps.setString(3, contato.getEmail());
+            ps.setInt(4, contato.getGroup());
+            ps.setInt(5, contato.getId_contato());
             ps.executeUpdate();
             ps.close();
-            */
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
 
@@ -62,8 +100,10 @@ public class JDBCContatoDAO implements ContatoDAO {
     }
 
     @Override
-    public void getContatoDao(ResultSet result) {
+    public void getContatoDao(int id) {
+        String sql = "SELECT * FROM CUSTOMER WHERE ID = ?";
 
+        return jdbcTemplate.queryForObject(sql, new Object[]{id}, new CustomerRowMapper());
     }
 
     public Contato getContatoDaoToContato( ResultSet result) throws SQLException {
