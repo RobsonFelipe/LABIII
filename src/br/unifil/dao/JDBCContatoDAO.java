@@ -2,13 +2,14 @@ package br.unifil.dao;
 
 import br.unifil.model.Contato;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.List;
 
 public class JDBCContatoDAO implements ContatoDAO {
 
@@ -100,10 +101,20 @@ public class JDBCContatoDAO implements ContatoDAO {
     }
 
     @Override
-    public void getContatoDao(int id) {
+    public Contato getContatoDaoId(int id) {
         String sql = "SELECT * FROM CUSTOMER WHERE ID = ?";
 
-        return jdbcTemplate.queryForObject(sql, new Object[]{id}, new CustomerRowMapper());
+        return jdbcTemplate.queryForObject(sql, new Object[]{id}, new ContatoRowMapper());
+    }
+
+    @Override
+    public Contato getContatoDaoEmail(String Email) {
+        return null;
+    }
+
+    @Override
+    public List<Contato> getContatoDaoGorup(int id) {
+        return null;
     }
 
     public Contato getContatoDaoToContato( ResultSet result) throws SQLException {
